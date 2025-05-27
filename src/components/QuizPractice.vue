@@ -91,11 +91,11 @@
             v-model="textAnswer"
             type="text"
             placeholder="Type your answer here..."
-            class="w-full p-3 rounded-lg border bg-white dark:bg-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none dark:text-gray-100 dark:border-gray-700 placeholder-gray-400 dark:placeholder-gray-500"
+            class="w-full p-3 rounded-lg border transition-colors duration-200 bg-white dark:bg-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 placeholder-gray-400 dark:placeholder-gray-500"
             :class="{
-              'border-gray-200': !showAnswer,
-              'border-green-500': showAnswer && isFillBlankCorrect,
-              'border-red-500': showAnswer && !isFillBlankCorrect
+              'border-gray-200 dark:border-gray-700': !showAnswer,
+              'border-green-500 dark:border-green-400': showAnswer && isFillBlankCorrect,
+              'border-red-500 dark:border-red-400': showAnswer && !isFillBlankCorrect
             }"
             :disabled="showAnswer"
           />
@@ -159,6 +159,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useQuizStore } from '../stores/quizStore';
 import { Toast } from '@capacitor/toast';
+import { hapticsService } from '../services/hapticsService';
 
 const quizStore = useQuizStore();
 const currentQuestionIndex = ref(0);
@@ -285,46 +286,41 @@ const selectAnswer = (answer) => {
   }
 };
 
-const checkAnswer = () => {
+const checkAnswer = async () => {
+  await hapticsService.medium();
   showAnswer.value = true;
-  console.log('checkAnswer called');
-  console.log('selectedAnswer:', selectedAnswer.value);
-  console.log('currentQuestion.correctAnswer:', currentQuestion.value.correctAnswer);
-  switch (currentQuestion.value.type) {
-    case 'multiple_choice':
-      if ((selectedAnswer.value || '').toLowerCase() === (currentQuestion.value.correctAnswer || '').toLowerCase()) {
-        score.value++;
-      }
-      break;
-    case 'true_false': {
-      const user = normalizeTrueFalse(selectedAnswer.value);
-      const correct = normalizeTrueFalse(currentQuestion.value.correctAnswer);
-      console.log('Normalized in checkAnswer:', user, correct);
-      if (user === correct) {
-        score.value++;
-      }
-      break;
-    }
-    case 'fill_blank':
-      if (normalizeText(textAnswer.value) === normalizeText(currentQuestion.value.answer)) {
-        score.value++;
-      }
-      break;
+  if (selectedAnswer.value === quiz.value.questions[currentQuestionIndex.value].correctAnswer) {
+    await hapticsService.success();
+    score.value++;
+  } else {
+    await hapticsService.error();
   }
 };
 
-const nextQuestion = () => {
-  if (currentQuestionIndex.value < quiz.value.questions.length - 1) {
-    currentQuestionIndex.value++;
-    selectedAnswer.value = null;
-    textAnswer.value = '';
-    showAnswer.value = false;
-  }
+const nextQuestion = async () => {
+  await hapticsService.light();
+  currentQuestionIndex.value++;
+  showAnswer.value = false;
+  selectedAnswer.value = null;
+  textAnswer.value = '';
 };
 
 const finishQuiz = async () => {
-  const percentage = Math.round((score.value / quiz.value.questions.length) * 100);
+  await hapticsService.success();
   showSummary.value = true;
+  const percentage = (score.value / quiz.value.questions.length) * 100;
+  let message = '';
+  if (percentage >= 90) {
+    message = 'Excellent!';
+  } else if (percentage >= 70) {
+    message = 'Good job!';
+  } else {
+    message = 'Keep practicing!';
+  }
+  await Toast.show({
+    text: `${message} You scored ${score.value}/${quiz.value.questions.length}`,
+    duration: 'long'
+  });
 };
 
 const handleRetakeQuiz = () => {

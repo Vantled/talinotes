@@ -12,6 +12,7 @@ import { useNoteStore } from './stores/noteStore';
 import { useQuizStore } from './stores/quizStore';
 import { useUiStore } from './stores/uiStore';
 import AppToast from './components/AppToast.vue';
+import { hapticsService } from './services/hapticsService';
 
 const noteStore = useNoteStore();
 const quizStore = useQuizStore();
@@ -109,18 +110,21 @@ const handleEdit = (note) => {
   showEditor.value = true;
 };
 
-const handleCreate = () => {
+const handleCreate = async () => {
+  await hapticsService.medium();
   isEditing.value = false;
   noteStore.clearCurrentNote();
   showEditor.value = true;
 };
 
-const handleCancel = () => {
+const handleCancel = async () => {
+  await hapticsService.light();
   showEditor.value = false;
   noteStore.clearCurrentNote();
 };
 
-const handleSaved = () => {
+const handleSaved = async () => {
+  await hapticsService.success();
   showEditor.value = false;
   noteStore.clearCurrentNote();
 };
@@ -128,11 +132,13 @@ const handleSaved = () => {
 const handleFolderTap = async (folder, event) => {
   const now = Date.now();
   if (folder.id === 'default') {
+    await hapticsService.light();
     activeFolderId.value = folder.id;
     return;
   }
   if (lastTapFolderId === folder.id && (now - lastTapTime < 350)) {
     // Double tap detected
+    await hapticsService.medium();
     showFolderMenuId.value = folder.id;
     await nextTick();
     // Use event.currentTarget for the correct button
@@ -150,6 +156,7 @@ const handleFolderTap = async (folder, event) => {
     console.log('Double tap detected for folder:', folder.name);
   } else {
     // Single tap: select folder
+    await hapticsService.light();
     activeFolderId.value = folder.id;
     lastTapTime = now;
     lastTapFolderId = folder.id;
@@ -245,7 +252,8 @@ const filteredNotes = () => {
   return noteStore.getNotesByFolder(activeFolderId.value);
 };
 
-const handleTitleTap = () => {
+const handleTitleTap = async () => {
+  await hapticsService.light();
   titleTapCount.value++;
   
   if (titleTapTimeout.value) {
@@ -254,6 +262,7 @@ const handleTitleTap = () => {
   
   titleTapTimeout.value = setTimeout(async () => {
     if (titleTapCount.value === 3) {
+      await hapticsService.success();
       activeTab.value = 'settings';
       uiStore.showToast('Developer settings unlocked', 'success');
     }
@@ -262,15 +271,17 @@ const handleTitleTap = () => {
 };
 
 // Quiz folder handling
-const handleQuizFolderTap = (folder, event) => {
+const handleQuizFolderTap = async (folder, event) => {
   const now = Date.now();
   if (lastTapFolderId === folder.id && (now - lastTapTime < 350)) {
     // Double tap detected
+    await hapticsService.medium();
     handleQuizFolderMenu(folder, event);
     lastTapTime = 0;
     lastTapFolderId = null;
   } else {
     // Single tap: select folder
+    await hapticsService.light();
     quizStore.setActiveFolder(folder.id);
     lastTapTime = now;
     lastTapFolderId = folder.id;

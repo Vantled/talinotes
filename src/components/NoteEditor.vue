@@ -115,6 +115,7 @@ import { useNoteStore } from '../stores/noteStore';
 import FormattingToolbar from './FormattingToolbar.vue';
 import StylePanel from './StylePanel.vue';
 import FloatingToolbar from './FloatingToolbar.vue';
+import { hapticsService } from '../services/hapticsService';
 
 const noteStore = useNoteStore();
 
@@ -287,6 +288,7 @@ const handleFolderSave = async () => {
     const newNote = await noteStore.addNote(note.value, selectedFolderId.value);
     note.value = { ...newNote };
   }
+  await hapticsService.success();
   emit('saved', note.value);
 };
 
@@ -306,6 +308,7 @@ const handleBack = async () => {
     const newNote = await noteStore.addNote(note.value, 'default');
     note.value = { ...newNote };
   }
+  await hapticsService.light();
   emit('saved', note.value);
 };
 
@@ -471,6 +474,53 @@ const handleClickOutsideStylePanel = (event) => {
   const panel = stylePanelRef.value;
   if (panel && !panel.contains(event.target)) {
     showStylePanel.value = false;
+  }
+};
+
+const handleSave = async () => {
+  await hapticsService.success();
+  emit('saved');
+};
+
+const handleCancel = async () => {
+  await hapticsService.light();
+  emit('cancel');
+};
+
+const handleFormat = async (format) => {
+  await hapticsService.light();
+  editor.value.chain().focus().toggleMark(format).run();
+};
+
+const handleHeading = async (level) => {
+  await hapticsService.medium();
+  editor.value.chain().focus().toggleHeading({ level }).run();
+};
+
+const handleList = async (type) => {
+  await hapticsService.medium();
+  if (type === 'bullet') {
+    editor.value.chain().focus().toggleBulletList().run();
+  } else if (type === 'ordered') {
+    editor.value.chain().focus().toggleOrderedList().run();
+  }
+};
+
+const handleTaskList = async () => {
+  await hapticsService.medium();
+  editor.value.chain().focus().toggleTaskList().run();
+};
+
+const handleTable = async () => {
+  await hapticsService.medium();
+  editor.value.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+};
+
+const handleImage = async () => {
+  await hapticsService.medium();
+  const url = window.prompt('Enter image URL');
+  if (url) {
+    editor.value.chain().focus().setImage({ src: url }).run();
   }
 };
 </script>
