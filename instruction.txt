@@ -1,0 +1,31 @@
+INSTRUCTION:
+Conceptualize and develop a functional hybrid mobile application using the Capacitor framework. Your application must effectively utilize at least five (5) official Capacitor plugins to demonstrate their practical use and integration within a real-world context.
+
+Begin by reviewing the official Capacitor plugins list to identify features and functionalities that align with your application idea. Your concept should address a specific problem, need, or opportunity, and should be realistic.
+
+
+PROJECT REQUIREMENTS:
+Design/Create/Implement LOGO for your Mobile App.
+Design/Create/Implement SPLASH SCREEN for your Mobile App.
+Project Presentation
+
+PROJECT PRESENTATION: Prepare a presentation for the demonstration of your project. Your presentation should include the following components:
+
+1. Project Title
+Provide the name of your hybrid mobile application.
+
+2. Project Description
+Give a brief overview of the application's purpose, its target users, and the problem it aims to solve. Include the key features and functionalities of the app.
+
+3. Technologies Used
+List the technologies, frameworks, and official Capacitor plugins utilized in developing the application. Be sure to include both frontend and backend technologies, if applicable.
+
+4. System Demonstration
+Showcase the actual working system. Walk through the main features of your application, explaining how each feature works and which Capacitor plugins are being used. Include visual elements such as screenshots, screen recordings, or a live demo to support your presentation.
+
+
+SUBMISSION:
+Upload the following:
+Hyperlink of your Website/Web App.
+APK File
+GitHub repository of your CAPACITOR APP.
