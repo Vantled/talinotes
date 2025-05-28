@@ -17,3 +17,25 @@
     a. Building the app
     b. Backend node
     c. Backend LLM for quiz generation
+
+#How to install the app to another ios device
+
+1. Get your friend's device UDID:
+    - Connect the device to a Mac
+    - Open Finder
+    - Click on the device
+    - Click on the device name to reveal the UDID
+    - Copy the UDID
+
+2. Add the device to your development profile:
+    - Open Xcode
+    - Go to Window → Devices and Simulators
+    - Click the "+" button
+    - Add the UDID you copied
+
+3. Build and run the app on Xcode.
+    - Select the device as your build target.
+    - Build and run the app.
+
+IMPORTANT - On the ios target device, trust the developer certificate first.
+    a. Settings > General > Device Management > Trust
