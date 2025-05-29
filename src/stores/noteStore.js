@@ -3,6 +3,7 @@ import { storageService } from '../services/storageService';
 import { Preferences } from '@capacitor/preferences';
 
 const FOLDERS_KEY = 'talinotes_folders';
+const RECENTLY_DELETED_NOTES_KEY = 'talinotes_recently_deleted_notes';
 const RECENTLY_DELETED_RETENTION_DAYS = 30;
 
 export const useNoteStore = defineStore('notes', {
@@ -38,6 +39,7 @@ export const useNoteStore = defineStore('notes', {
       try {
         await this.loadFolders();
         await this.fetchNotes();
+        await this.loadRecentlyDeleted();
       } catch (error) {
         console.error('Error initializing store:', error);
         this.error = 'Failed to initialize app';
@@ -159,6 +161,7 @@ export const useNoteStore = defineStore('notes', {
           this.recentlyDeleted.unshift({ ...note, deletedAt: Date.now() });
           await storageService.deleteNote(noteId);
           await this.saveFolders();
+          await this.saveRecentlyDeleted();
           this.error = null;
           console.log('Note moved to recently deleted:', noteId);
         } else {
@@ -203,6 +206,7 @@ export const useNoteStore = defineStore('notes', {
         // Save changes to storage
         await this.saveNotes();
         await this.saveFolders();
+        await this.saveRecentlyDeleted();
         return true;
       }
       return false;
@@ -212,7 +216,7 @@ export const useNoteStore = defineStore('notes', {
       const idx = this.recentlyDeleted.findIndex(n => n.id === noteId);
       if (idx !== -1) {
         this.recentlyDeleted.splice(idx, 1);
-        await this.saveNotes();
+        await this.saveRecentlyDeleted();
         return true;
       }
       return false;
@@ -328,6 +332,28 @@ export const useNoteStore = defineStore('notes', {
       } catch (error) {
         console.error('Error saving notes:', error);
         throw error;
+      }
+    },
+
+    async loadRecentlyDeleted() {
+      try {
+        const { value } = await Preferences.get({ key: RECENTLY_DELETED_NOTES_KEY });
+        if (value) {
+          this.recentlyDeleted = JSON.parse(value);
+        }
+      } catch (error) {
+        console.error('Error loading recently deleted notes:', error);
+      }
+    },
+
+    async saveRecentlyDeleted() {
+      try {
+        await Preferences.set({ 
+          key: RECENTLY_DELETED_NOTES_KEY, 
+          value: JSON.stringify(this.recentlyDeleted) 
+        });
+      } catch (error) {
+        console.error('Error saving recently deleted notes:', error);
       }
     }
   }

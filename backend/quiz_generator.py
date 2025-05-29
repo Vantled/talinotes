@@ -62,10 +62,10 @@ def generate_quiz():
             }), 503
 
         # Construct the prompt for quiz generation
-        prompt = f"""You are a quiz generation assistant. Generate a quiz with at least 20 questions from this content. The quiz MUST include ALL of these question types:
+        prompt = f"""Generate a quiz based on the following content. Create a mix of different question types:
 
 1. Multiple choice questions (with 4 options each and correct answer)
-2. Fill-in-the-blank questions (at least 5 of these)
+2. Fill-in-the-blank questions
 3. True or False questions
 
 For fill-in-the-blank questions:
@@ -99,10 +99,9 @@ b) False
 Correct: [True/False]
 
 IMPORTANT:
-- Generate AT LEAST 20 questions total
-- Include AT LEAST 5 fill-in-the-blank questions
-- Make sure all question types are present
+- Generate a mix of different question types
 - Questions should be diverse and cover different aspects of the content
+- Each question should be unique and test different concepts
 - For fill-in-the-blank, always use "_____" to indicate the blank
 - For fill-in-the-blank answers, use only single words or two words maximum
 - Make sure each fill-in-the-blank question has exactly one "_____" in it

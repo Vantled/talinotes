@@ -289,7 +289,23 @@ const selectAnswer = (answer) => {
 const checkAnswer = async () => {
   await hapticsService.medium();
   showAnswer.value = true;
-  if (selectedAnswer.value === quiz.value.questions[currentQuestionIndex.value].correctAnswer) {
+  
+  let isCorrect = false;
+  const currentQ = currentQuestion.value;
+  
+  switch (currentQ.type) {
+    case 'multiple_choice':
+      isCorrect = selectedAnswer.value === currentQ.correctAnswer;
+      break;
+    case 'true_false':
+      isCorrect = normalizeTrueFalse(selectedAnswer.value) === normalizeTrueFalse(currentQ.correctAnswer);
+      break;
+    case 'fill_blank':
+      isCorrect = normalizeText(textAnswer.value) === normalizeText(currentQ.answer);
+      break;
+  }
+  
+  if (isCorrect) {
     await hapticsService.success();
     score.value++;
   } else {

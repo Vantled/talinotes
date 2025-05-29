@@ -140,20 +140,58 @@ const handleFolderTap = async (folder, event) => {
     // Double tap detected
     await hapticsService.medium();
     showFolderMenuId.value = folder.id;
-    await nextTick();
-    // Use event.currentTarget for the correct button
-    const btn = event?.currentTarget;
-    if (btn) {
-      const rect = btn.getBoundingClientRect();
-      folderPopoverPosition.value = {
-        top: `${rect.bottom + window.scrollY + 4}px`,
-        left: `${rect.left + window.scrollX}px`,
-        width: '10rem'
-      };
+    
+    try {
+      // Get the button element from the event target
+      const btn = event.target;
+      console.log('📁 Notes Folder Menu - Event:', {
+        type: event.type,
+        target: event.target?.tagName,
+        currentTarget: event.currentTarget?.tagName,
+        hasButton: !!btn,
+        buttonClasses: btn?.className
+      });
+
+      if (btn) {
+        // Wait for next tick to ensure DOM is updated
+        await nextTick();
+        
+        const rect = btn.getBoundingClientRect();
+        console.log('📁 Notes Folder Menu - Button Position:', JSON.stringify({
+          top: rect.top,
+          bottom: rect.bottom,
+          left: rect.left,
+          right: rect.right,
+          width: rect.width,
+          height: rect.height,
+          windowHeight: window.innerHeight,
+          windowWidth: window.innerWidth
+        }));
+        
+        const menuPosition = {
+          top: `${rect.bottom + 8}px`,
+          left: `${Math.min(rect.left, window.innerWidth - 180)}px`,
+          width: '10rem'
+        };
+        folderPopoverPosition.value = menuPosition;
+        
+        console.log('📁 Notes Folder Menu - Calculated Position:', JSON.stringify({
+          top: menuPosition.top,
+          left: menuPosition.left,
+          width: menuPosition.width,
+          windowWidth: window.innerWidth,
+          adjustedLeft: Math.min(rect.left, window.innerWidth - 180)
+        }));
+      } else {
+        console.log('📁 Notes Folder Menu - No button element found');
+      }
+    } catch (error) {
+      console.log('📁 Notes Folder Menu - Error calculating position:', error.message);
     }
+    
     lastTapTime = 0;
     lastTapFolderId = null;
-    console.log('Double tap detected for folder:', folder.name);
+    console.log('📁 Notes Folder Menu - Double tap detected for folder:', folder.name);
   } else {
     // Single tap: select folder
     await hapticsService.light();
@@ -202,9 +240,23 @@ const handleCancelDeleteFolder = () => {
 };
 
 const handleCloseFolderMenu = (e) => {
-  // Only close if click is outside the menu
-  if (!e.target.closest('.folder-menu-popover')) {
-    showFolderMenuId.value = null;
+  try {
+    // Only close if click is outside the menu
+    const isOutside = !e.target.closest('.folder-menu-popover');
+    console.log('📁 Folder Menu - Click event:', {
+      target: e.target?.tagName,
+      isOutside,
+      menuOpen: !!showFolderMenuId.value
+    });
+    
+    if (isOutside) {
+      console.log('📁 Folder Menu - Closing menu, clicked outside');
+      showFolderMenuId.value = null;
+    } else {
+      console.log('📁 Folder Menu - Clicked inside menu, keeping open');
+    }
+  } catch (error) {
+    console.log('📁 Folder Menu - Error handling click:', error.message);
   }
 };
 
@@ -291,17 +343,53 @@ const handleQuizFolderTap = async (folder, event) => {
 const handleQuizFolderMenu = (folder, event) => {
   showFolderMenuId.value = folder.id;
   folderMenuTarget = folder;
-  nextTick(() => {
-    const btn = event?.currentTarget;
+  
+  try {
+    // Get the button element from the event target
+    const btn = event.target;
+    console.log('📝 Quiz Folder Menu - Event:', {
+      type: event.type,
+      target: event.target?.tagName,
+      currentTarget: event.currentTarget?.tagName,
+      hasButton: !!btn,
+      buttonClasses: btn?.className
+    });
+
     if (btn) {
-      const rect = btn.getBoundingClientRect();
-      folderPopoverPosition.value = {
-        top: `${rect.bottom + window.scrollY + 4}px`,
-        left: `${rect.left + window.scrollX}px`,
-        width: '10rem'
-      };
+      nextTick(() => {
+        const rect = btn.getBoundingClientRect();
+        console.log('📝 Quiz Folder Menu - Button Position:', JSON.stringify({
+          top: rect.top,
+          bottom: rect.bottom,
+          left: rect.left,
+          right: rect.right,
+          width: rect.width,
+          height: rect.height,
+          windowHeight: window.innerHeight,
+          windowWidth: window.innerWidth
+        }));
+        
+        const menuPosition = {
+          top: `${rect.bottom + 8}px`,
+          left: `${Math.min(rect.left, window.innerWidth - 180)}px`,
+          width: '10rem'
+        };
+        folderPopoverPosition.value = menuPosition;
+        
+        console.log('📝 Quiz Folder Menu - Calculated Position:', JSON.stringify({
+          top: menuPosition.top,
+          left: menuPosition.left,
+          width: menuPosition.width,
+          windowWidth: window.innerWidth,
+          adjustedLeft: Math.min(rect.left, window.innerWidth - 180)
+        }));
+      });
+    } else {
+      console.log('📝 Quiz Folder Menu - No button element found');
     }
-  });
+  } catch (error) {
+    console.log('📝 Quiz Folder Menu - Error calculating position:', error.message);
+  }
 };
 
 const handleQuizDrop = async (folderId, event) => {

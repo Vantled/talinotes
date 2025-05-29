@@ -4,6 +4,7 @@ import { aiService } from '../services/aiService';
 
 const QUIZZES_KEY = 'talinotes_quizzes';
 const QUIZ_FOLDERS_KEY = 'talinotes_quiz_folders';
+const RECENTLY_DELETED_QUIZZES_KEY = 'talinotes_recently_deleted_quizzes';
 const RECENTLY_DELETED_RETENTION_DAYS = 30;
 
 export const useQuizStore = defineStore('quizzes', {
@@ -39,6 +40,7 @@ export const useQuizStore = defineStore('quizzes', {
       this.purgeExpiredRecentlyDeleted();
       await this.loadFolders();
       await this.loadQuizzes();
+      await this.loadRecentlyDeleted();
     },
 
     async loadFolders() {
@@ -110,6 +112,28 @@ export const useQuizStore = defineStore('quizzes', {
       }
     },
 
+    async loadRecentlyDeleted() {
+      try {
+        const { value } = await Preferences.get({ key: RECENTLY_DELETED_QUIZZES_KEY });
+        if (value) {
+          this.recentlyDeleted = JSON.parse(value);
+        }
+      } catch (error) {
+        console.error('Error loading recently deleted quizzes:', error);
+      }
+    },
+
+    async saveRecentlyDeleted() {
+      try {
+        await Preferences.set({ 
+          key: RECENTLY_DELETED_QUIZZES_KEY, 
+          value: JSON.stringify(this.recentlyDeleted) 
+        });
+      } catch (error) {
+        console.error('Error saving recently deleted quizzes:', error);
+      }
+    },
+
     async deleteQuiz(quizId) {
       const quiz = this.quizzes.find(q => q.id === quizId);
       if (quiz) {
@@ -124,6 +148,7 @@ export const useQuizStore = defineStore('quizzes', {
         this.recentlyDeleted.unshift({ ...quiz, deletedAt: Date.now() });
         await this.saveQuizzes();
         await this.saveFolders();
+        await this.saveRecentlyDeleted();
       }
     },
 
@@ -157,6 +182,7 @@ export const useQuizStore = defineStore('quizzes', {
         // Save changes to storage
         await this.saveQuizzes();
         await this.saveFolders();
+        await this.saveRecentlyDeleted();
         return true;
       }
       return false;
@@ -262,7 +288,7 @@ export const useQuizStore = defineStore('quizzes', {
       const idx = this.recentlyDeleted.findIndex(q => q.id === quizId);
       if (idx !== -1) {
         this.recentlyDeleted.splice(idx, 1);
-        await this.saveQuizzes();
+        await this.saveRecentlyDeleted();
         return true;
       }
       return false;
